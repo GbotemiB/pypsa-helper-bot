@@ -1,0 +1,11 @@
+discord.py
+python-dotenv
+langchain-github
+langchain-community
+langchain-google-genai 
+google-generativeai
+langchain 
+tiktoken 
+faiss-cpu 
+beautifulsoup4 
+gitpython
