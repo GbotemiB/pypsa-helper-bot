@@ -3,19 +3,20 @@
 
 app = 'pypsa-helper-bot'
 primary_region = 'iad'
+kill_signal = 'SIGINT'
+kill_timeout = '10s'
+
+[experimental]
+  auto_rollback = true
 
 [build]
 
 [env]
-  INDEX_CHECK_INTERVAL = '300'
   PYTHONUNBUFFERED = '1'
+  INDEX_CHECK_INTERVAL = '300'
 
-# Discord bots don't need HTTP service, but we keep auto-start/stop settings
-[http_service]
-  auto_stop_machines = 'off'  # Keep bot always running
-  auto_start_machines = true
-  min_machines_running = 1    # Always keep 1 instance running
-
-[vm]
+# No HTTP service needed for Discord bot
+# Using [[vm]] instead of [http_service] to avoid port expectations
+[[vm]]
   size = 'shared-cpu-1x'
   memory = '256mb'
