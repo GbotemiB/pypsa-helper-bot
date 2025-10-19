@@ -16,3 +16,4 @@ bot.log
 
 # Secrets
 .env
+*.md

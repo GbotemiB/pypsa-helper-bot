@@ -1,0 +1,60 @@
+name: Test Setup
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+jobs:
+  test-dependencies:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Test imports
+        run: |
+          python -c "import discord; print('✅ discord.py installed')"
+          python -c "import langchain; print('✅ langchain installed')"
+          python -c "import google.generativeai; print('✅ google-generativeai installed')"
+          python -c "import faiss; print('✅ faiss-cpu installed')"
+          python -c "import requests; print('✅ requests installed')"
+      
+      - name: Check secrets
+        run: |
+          echo "Checking if required secrets are set..."
+          if [ -z "${{ secrets.GOOGLE_API_KEY }}" ]; then
+            echo "❌ GOOGLE_API_KEY not set"
+            exit 1
+          else
+            echo "✅ GOOGLE_API_KEY is set"
+          fi
+          
+          if [ -z "${{ secrets.FLY_API_TOKEN }}" ]; then
+            echo "⚠️ FLY_API_TOKEN not set (needed for deployment)"
+          else
+            echo "✅ FLY_API_TOKEN is set"
+          fi
+      
+      - name: Test storage module
+        run: |
+          cd src
+          python -c "from storage import IndexStorage; storage = IndexStorage(); print('✅ Storage module works')"
+      
+      - name: Summary
+        run: |
+          echo "🎉 All tests passed!"
+          echo ""
+          echo "Next steps:"
+          echo "1. Run the 'Daily Knowledge Base Reindex' workflow to generate initial index"
+          echo "2. Set up Fly.io: flyctl launch --no-deploy"
+          echo "3. Set Fly.io secrets: flyctl secrets set DISCORD_BOT_TOKEN=..."
+          echo "4. Deploy: git push origin main"

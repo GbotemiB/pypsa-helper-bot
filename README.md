@@ -112,10 +112,51 @@ Your bot should now be online and ready to answer questions in the Discord serve
 
 ## Deployment
 
-For a 24/7 production environment, the bot should be deployed to a cloud server.
+This bot is designed to be deployed on **Fly.io** with automatic daily knowledge base updates via **GitHub Actions**.
 
-*   **Recommended Approach:** A small Virtual Private Server (VPS) from a provider like DigitalOcean, Linode, or Hetzner (2 vCPU, 4GB RAM is a good starting point). This provides a persistent filesystem which is ideal for hosting the FAISS index.
-*   **Advanced Approach:** A hybrid model using an HPC cluster (like ZIB) to run the intensive `ingest.py` script and then transferring the resulting index to a cheap VPS for the live `bot.py` service.
+### Quick Deploy
+
+```bash
+# Install Fly.io CLI
+curl -L https://fly.io/install.sh | sh
+
+# Login and launch
+flyctl auth login
+flyctl launch --no-deploy
+
+# Set secrets
+flyctl secrets set DISCORD_BOT_TOKEN="your_token"
+flyctl secrets set GOOGLE_API_KEY="your_key"
+
+# Deploy
+flyctl deploy
+```
+
+### Features
+
+✅ **Automated Daily Reindexing** - GitHub Actions updates knowledge base at 00:00 UTC  
+✅ **Hot-Reload** - Bot detects and loads new index without downtime  
+✅ **Free Tier** - Runs on Fly.io free tier (256MB RAM)  
+✅ **Zero Setup Storage** - Uses GitHub Releases for index storage  
+
+### Architecture
+
+```
+GitHub Actions (Daily 00:00 UTC)
+  ↓ Run ingest.py
+  ↓ Build FAISS Index
+  ↓ Upload to GitHub Releases
+  
+Fly.io Bot
+  ↓ Download latest index
+  ↓ Hot-reload every 5 minutes
+  ↓ Serve Discord requests
+```
+
+For detailed instructions, see:
+- 📚 [Quick Start Guide](docs/QUICKSTART.md)
+- 🚀 [Deployment Guide](docs/DEPLOYMENT.md)
+- 📦 [Installation Guide](docs/INSTALLATION.md)
 
 ## License
 

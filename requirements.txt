@@ -9,3 +9,4 @@ tiktoken
 faiss-cpu 
 beautifulsoup4 
 gitpython
+requests

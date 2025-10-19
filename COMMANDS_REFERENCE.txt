@@ -1,0 +1,214 @@
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║                   PyPSA Helper Bot - Quick Command Reference             ║
+║                          Keep This Handy! 📌                             ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🚀 GETTING STARTED                                                       │
+├──────────────────────────────────────────────────────────────────────────┤
+│ 1. Install dependencies:                                                 │
+│    pip install -r requirements.txt                                       │
+│                                                                          │
+│ 2. Configure environment:                                                │
+│    cp .env.sample .env && nano .env                                      │
+│                                                                          │
+│ 3. Test setup:                                                           │
+│    python test_setup.py                                                  │
+│                                                                          │
+│ 4. Generate index (first time, takes 30-60 min):                        │
+│    cd src && python ingest.py                                            │
+│                                                                          │
+│ 5. Run bot locally:                                                      │
+│    cd src && python bot.py                                               │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🧪 TESTING COMMANDS                                                      │
+├──────────────────────────────────────────────────────────────────────────┤
+│ Local:                                                                   │
+│   python test_setup.py              # Automated tests                    │
+│   cd src && python bot.py           # Run bot                            │
+│   Ctrl+C                            # Stop bot                           │
+│                                                                          │
+│ Discord test messages:                                                   │
+│   @BotName hello                                                         │
+│   @BotName what is PyPSA?                                                │
+│   @BotName how do I create a network?                                    │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ ☁️  FLY.IO COMMANDS                                                      │
+├──────────────────────────────────────────────────────────────────────────┤
+│ Setup:                                                                   │
+│   flyctl auth login                 # Login to Fly.io                    │
+│   flyctl launch --no-deploy         # Create app                         │
+│   flyctl auth token                 # Get API token                      │
+│                                                                          │
+│ Secrets:                                                                 │
+│   flyctl secrets set KEY=VALUE      # Set secret                         │
+│   flyctl secrets list               # List secrets                       │
+│                                                                          │
+│ Deploy:                                                                  │
+│   flyctl deploy                     # Manual deploy                      │
+│   git push origin main              # Auto-deploy via GitHub             │
+│                                                                          │
+│ Monitor:                                                                 │
+│   flyctl status                     # App status                         │
+│   flyctl logs                       # Real-time logs                     │
+│   flyctl logs --tail=100            # Last 100 lines                     │
+│                                                                          │
+│ Manage:                                                                  │
+│   flyctl restart                    # Restart app                        │
+│   flyctl scale memory 512           # Scale memory                       │
+│   flyctl ssh console                # SSH into container                 │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🐙 GITHUB ACTIONS                                                        │
+├──────────────────────────────────────────────────────────────────────────┤
+│ Workflows:                                                               │
+│   • Daily Knowledge Base Reindex    (00:00 UTC daily)                   │
+│   • Deploy to Fly.io                (on push to main)                    │
+│   • Test Setup                      (manual trigger)                     │
+│                                                                          │
+│ Manual trigger:                                                          │
+│   Repo → Actions → Workflow Name → Run workflow                         │
+│                                                                          │
+│ Required secrets (Settings → Secrets → Actions):                        │
+│   • GOOGLE_API_KEY                                                       │
+│   • FLY_API_TOKEN                                                        │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🔑 REQUIRED CREDENTIALS                                                  │
+├──────────────────────────────────────────────────────────────────────────┤
+│ Local (.env file):                                                       │
+│   ✓ DISCORD_BOT_TOKEN                                                    │
+│   ✓ GOOGLE_API_KEY                                                       │
+│   ✓ GITHUB_ACCESS_TOKEN                                                  │
+│                                                                          │
+│ GitHub Secrets:                                                          │
+│   ✓ GOOGLE_API_KEY                                                       │
+│   ✓ FLY_API_TOKEN                                                        │
+│                                                                          │
+│ Fly.io Secrets:                                                          │
+│   ✓ DISCORD_BOT_TOKEN                                                    │
+│   ✓ GOOGLE_API_KEY                                                       │
+│   ✓ GITHUB_REPO_OWNER                                                    │
+│   ✓ GITHUB_REPO_NAME                                                     │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🐛 TROUBLESHOOTING                                                       │
+├──────────────────────────────────────────────────────────────────────────┤
+│ Problem: Bot won't start locally                                         │
+│ Fix: python test_setup.py                                                │
+│                                                                          │
+│ Problem: "Message content intent" error                                  │
+│ Fix: Discord Dev Portal → Bot → Enable MESSAGE CONTENT INTENT           │
+│                                                                          │
+│ Problem: Bot doesn't respond in Discord                                  │
+│ Fix: Use @BotName (mention), check bot is online, check permissions     │
+│                                                                          │
+│ Problem: Index not found                                                 │
+│ Fix: cd src && python ingest.py                                          │
+│                                                                          │
+│ Problem: Out of memory on Fly.io                                         │
+│ Fix: flyctl scale memory 512                                             │
+│                                                                          │
+│ Problem: Deployment fails                                                │
+│ Fix: flyctl logs (check errors), flyctl secrets list (verify secrets)   │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 📊 SUCCESS INDICATORS                                                    │
+├──────────────────────────────────────────────────────────────────────────┤
+│ Local test:                                                              │
+│   ✅ test_setup.py shows "All tests passed!"                            │
+│   ✅ Bot starts and shows "connected to Discord!"                       │
+│   ✅ Bot responds to @mentions in Discord                               │
+│                                                                          │
+│ Fly.io deployment:                                                       │
+│   ✅ flyctl status shows "started" and "passing"                        │
+│   ✅ flyctl logs shows "connected to Discord!"                          │
+│   ✅ Bot shows as ONLINE (green) in Discord                             │
+│   ✅ Bot responds to questions in Discord                               │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ ⏱️  TIME ESTIMATES                                                       │
+├──────────────────────────────────────────────────────────────────────────┤
+│ Install dependencies:         2-5 min                                    │
+│ Configure .env:               2 min                                      │
+│ Run test_setup.py:            1 min                                      │
+│ Generate FAISS index:         30-60 min ⏰                               │
+│ Test bot locally:             5-10 min                                   │
+│ Set up Fly.io:                10 min                                     │
+│ First deployment:             5-10 min                                   │
+│ ─────────────────────────────────────────────                           │
+│ Total (without index):        25-35 min                                  │
+│ Total (with index):           60-95 min                                  │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 💰 COST ESTIMATE                                                         │
+├──────────────────────────────────────────────────────────────────────────┤
+│ Fly.io (256MB):               $0/month  (free tier)                      │
+│ GitHub Actions:               $0/month  (2,000 min free)                 │
+│ GitHub Releases:              $0/month  (free storage)                   │
+│ Google Gemini API:            ~$1-5/month  (pay per use)                 │
+│ ─────────────────────────────────────────────                           │
+│ Expected Total:               ~$1-5/month                                │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 📚 DOCUMENTATION GUIDE                                                   │
+├──────────────────────────────────────────────────────────────────────────┤
+│ START HERE:                                                              │
+│   → START_HERE.md               Complete overview                        │
+│   → TESTING_GUIDE.md            Step-by-step testing (recommended)       │
+│                                                                          │
+│ DEPLOYMENT:                                                              │
+│   → docs/QUICKSTART.md          15-minute quick setup                    │
+│   → docs/DEPLOYMENT.md          Complete Fly.io guide                    │
+│   → docs/INSTALLATION.md        Add to Discord servers                   │
+│                                                                          │
+│ REFERENCE:                                                               │
+│   → docs/TESTING.md             Comprehensive testing                    │
+│   → docs/FLY_IO_SETUP.md        Architecture & troubleshooting           │
+│   → docs/CHECKLIST.md           Track your progress                      │
+│   → docs/QUICK_TEST.md          Command reference                        │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🎯 QUICK START PATH                                                      │
+├──────────────────────────────────────────────────────────────────────────┤
+│ 1. Read: START_HERE.md or TESTING_GUIDE.md                              │
+│ 2. Run: python test_setup.py                                             │
+│ 3. Generate: cd src && python ingest.py                                  │
+│ 4. Test: cd src && python bot.py                                         │
+│ 5. Deploy: Follow docs/DEPLOYMENT.md                                     │
+│ 6. Monitor: flyctl logs                                                  │
+│ 7. Success! 🎉                                                           │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 📞 GET HELP                                                              │
+├──────────────────────────────────────────────────────────────────────────┤
+│ GitHub Issues:                                                           │
+│   https://github.com/GbotemiB/pypsa-helper-bot/issues                   │
+│                                                                          │
+│ Documentation:                                                           │
+│   All guides in docs/ directory                                         │
+│                                                                          │
+│ Community:                                                               │
+│   Fly.io: https://community.fly.io                                      │
+│   Discord.py: https://discord.gg/discord-py                             │
+└──────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  Print this reference card and keep it handy while testing! 📌          ║
+║  Or save as: commands.txt for easy terminal reference                   ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
