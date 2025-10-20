@@ -112,32 +112,25 @@ Your bot should now be online and ready to answer questions in the Discord serve
 
 ## Deployment
 
-This bot is designed to be deployed on **Fly.io** with automatic daily knowledge base updates via **GitHub Actions**.
+This bot is designed to be deployed on **Azure Container Instances** with automatic daily knowledge base updates via **GitHub Actions**.
 
-### Quick Deploy
+### Quick Deploy to Azure
 
-```bash
-# Install Fly.io CLI
-curl -L https://fly.io/install.sh | sh
+See the complete guide: **[docs/AZURE_SETUP.md](docs/AZURE_SETUP.md)**
 
-# Login and launch
-flyctl auth login
-flyctl launch --no-deploy
-
-# Set secrets
-flyctl secrets set DISCORD_BOT_TOKEN="your_token"
-flyctl secrets set GOOGLE_API_KEY="your_key"
-
-# Deploy
-flyctl deploy
-```
+**Quick overview:**
+1. Sign up for Azure (students get $100 credit, no credit card needed)
+2. Create resource group and container registry
+3. Set up GitHub secrets for automated deployment
+4. Push to main branch → Auto-deploy via GitHub Actions
 
 ### Features
 
 ✅ **Automated Daily Reindexing** - GitHub Actions updates knowledge base at 00:00 UTC  
 ✅ **Hot-Reload** - Bot detects and loads new index without downtime  
-✅ **Free Tier** - Runs on Fly.io free tier (256MB RAM)  
+✅ **Student-Friendly** - Azure for Students ($100 credit, no CC required)  
 ✅ **Zero Setup Storage** - Uses GitHub Releases for index storage  
+✅ **Auto-Deploy** - Push to main = automatic deployment  
 
 ### Architecture
 
@@ -147,16 +140,17 @@ GitHub Actions (Daily 00:00 UTC)
   ↓ Build FAISS Index
   ↓ Upload to GitHub Releases
   
-Fly.io Bot
+Azure Container Instances
   ↓ Download latest index
   ↓ Hot-reload every 5 minutes
   ↓ Serve Discord requests
 ```
 
 For detailed instructions, see:
-- 📚 [Quick Start Guide](docs/QUICKSTART.md)
-- 🚀 [Deployment Guide](docs/DEPLOYMENT.md)
-- 📦 [Installation Guide](docs/INSTALLATION.md)
+- 🎓 **[Azure Setup Guide](docs/AZURE_SETUP.md)** ← START HERE
+- � [Installation Guide](docs/INSTALLATION.md)
+- 🧪 [Testing Guide](docs/TESTING.md)
+
 
 ## License
 
