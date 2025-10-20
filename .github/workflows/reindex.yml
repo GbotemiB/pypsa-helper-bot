@@ -26,6 +26,13 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
       
+      - name: Create virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
+          echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
+      
       - name: Install dependencies
         run: |
           pip install --upgrade pip
