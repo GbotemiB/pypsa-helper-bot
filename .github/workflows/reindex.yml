@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'src/ingest.py'
-      - 'requirements.txt'
-      - '.github/workflows/reindex.yml'
   schedule:
     # Run daily at 00:00 UTC
     - cron: '0 0 * * *'
