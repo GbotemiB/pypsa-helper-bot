@@ -3,7 +3,7 @@ import time
 from git import Repo
 from langchain_community.document_loaders import DirectoryLoader, TextLoader, GitHubIssuesLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_community.embeddings import HuggingFaceBgeEmbeddings
 from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
 import shutil
@@ -12,19 +12,12 @@ import re
 load_dotenv()  # Load from .env file if it exists (for local development)
 
 GITHUB_TOKEN = os.getenv("GITHUB_ACCESS_TOKEN")
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
-# Check if required environment variables are set
+# Check if required environment variable is set
 if not GITHUB_TOKEN:
     raise ValueError(
         "GitHub access token not found. "
         "Set GITHUB_ACCESS_TOKEN environment variable or add to .env file"
-    )
-
-if not GOOGLE_API_KEY:
-    raise ValueError(
-        "Google API key not found. "
-        "Set GOOGLE_API_KEY environment variable or add to .env file"
     )
 
 REPOSITORIES = {
@@ -136,35 +129,34 @@ docs = text_splitter.split_documents(all_documents)
 print(f"Split into {len(docs)} chunks.")
 
 # --- 4. Create Embeddings and Store in FAISS ---
-print("Creating embeddings with Google Gemini and building FAISS vector store...")
-print("Note: Processing in batches with rate limiting to avoid API quota limits...")
+print("Creating embeddings with BAAI BGE Large model and building FAISS vector store...")
+print("Using high-quality 1024-dimensional embeddings for better retrieval...")
 
-# Using Google's embedding model - requires GOOGLE_API_KEY
-embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+# Using BAAI BGE Large model - runs locally, no API key needed
+embeddings = HuggingFaceBgeEmbeddings(
+    model_name="BAAI/bge-large-en-v1.5",
+    model_kwargs={'device': 'cpu'},
+    encode_kwargs={'normalize_embeddings': True}
+)
 
-# Process documents in batches with rate limiting to avoid quota errors
+# Process documents in batches for progress tracking
 batch_size = 100  # Process 100 documents at a time
 total_batches = (len(docs) + batch_size - 1) // batch_size
-print(
-    f"Processing {len(docs)} chunks in {total_batches} batches of {batch_size}...")
+print(f"Processing {len(docs)} chunks in {total_batches} batches of {batch_size}...")
 
 # Create the first batch to initialize the vector store
 first_batch = docs[:batch_size]
 vector_store = FAISS.from_documents(first_batch, embeddings)
 print(f"Batch 1/{total_batches} completed")
 
-# Add remaining batches with delays
+# Add remaining batches
 for i in range(1, total_batches):
     start_idx = i * batch_size
     end_idx = min(start_idx + batch_size, len(docs))
     batch = docs[start_idx:end_idx]
 
-    # Add a small delay between batches to respect rate limits
-    time.sleep(2)  # 2 second delay between batches
-
     vector_store.add_documents(batch)
-    print(
-        f"Batch {i+1}/{total_batches} completed ({end_idx}/{len(docs)} chunks processed)")
+    print(f"Batch {i+1}/{total_batches} completed ({end_idx}/{len(docs)} chunks processed)")
 
 print("All embeddings created successfully!")
 

@@ -39,22 +39,14 @@ jobs:
         else
           echo "✅ GITHUB_ACCESS_TOKEN is set (length: ${#GITHUB_ACCESS_TOKEN})"
         fi
-        echo "Checking if GOOGLE_API_KEY is set..."
-        if [ -z "$GOOGLE_API_KEY" ]; then
-          echo "❌ GOOGLE_API_KEY is NOT set"
-        else
-          echo "✅ GOOGLE_API_KEY is set (length: ${#GOOGLE_API_KEY})"
-        fi
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT }}
-        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
     
     - name: Run ingestion process
       run: |
         python src/ingest.py
       env:
         GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT }}
-        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
     
     - name: Create build metadata
       run: |

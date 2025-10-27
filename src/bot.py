@@ -5,7 +5,8 @@ import asyncio
 from pathlib import Path
 
 from langchain.chains import ConversationalRetrievalChain
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_community.embeddings import HuggingFaceBgeEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain.prompts import PromptTemplate
@@ -34,7 +35,11 @@ Follow these rules strictly:
 
 # --- 2. Load FAISS Vector Store ---
 # Using the same embedding model as used during index creation
-embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+embeddings = HuggingFaceBgeEmbeddings(
+    model_name="BAAI/bge-large-en-v1.5",
+    model_kwargs={'device': 'cpu'},
+    encode_kwargs={'normalize_embeddings': True}
+)
 
 VECTOR_STORE_PATH = "pypsa_ecosystem_faiss_index"
 vector_store = FAISS.load_local(
