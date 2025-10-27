@@ -16,6 +16,7 @@ env:
   AZURE_RESOURCE_GROUP: pypsa-bot-rg
   AZURE_CONTAINER_NAME: pypsa-discord-bot
   AZURE_LOCATION: eastus
+  DOCKERHUB_USERNAME: gbotemi  # Change this to your Docker Hub username
   DOCKER_IMAGE_NAME: pypsa-helper-bot
 
 jobs:
@@ -30,17 +31,11 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
     
-    - name: Log in to Azure
-      uses: azure/login@v1
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-    
-    - name: Log in to Azure Container Registry
-      uses: azure/docker-login@v1
-      with:
-        login-server: ${{ secrets.AZURE_REGISTRY_NAME }}.azurecr.io
-        username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
-        password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
     
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
@@ -48,20 +43,25 @@ jobs:
         context: .
         push: true
         tags: |
-          ${{ secrets.AZURE_REGISTRY_NAME }}.azurecr.io/${{ env.DOCKER_IMAGE_NAME }}:latest
-          ${{ secrets.AZURE_REGISTRY_NAME }}.azurecr.io/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
-        cache-from: type=registry,ref=${{ secrets.AZURE_REGISTRY_NAME }}.azurecr.io/${{ env.DOCKER_IMAGE_NAME }}:buildcache
-        cache-to: type=registry,ref=${{ secrets.AZURE_REGISTRY_NAME }}.azurecr.io/${{ env.DOCKER_IMAGE_NAME }}:buildcache,mode=max
+          ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+          ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
+        cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:buildcache
+        cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:buildcache,mode=max
+    
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
     
     - name: Deploy to Azure Container Instances
       uses: azure/aci-deploy@v1
       with:
         resource-group: ${{ env.AZURE_RESOURCE_GROUP }}
         dns-name-label: pypsa-bot-${{ github.run_number }}
-        image: ${{ secrets.AZURE_REGISTRY_NAME }}.azurecr.io/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
-        registry-login-server: ${{ secrets.AZURE_REGISTRY_NAME }}.azurecr.io
-        registry-username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
-        registry-password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+        image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
+        registry-login-server: docker.io
+        registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+        registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
         name: ${{ env.AZURE_CONTAINER_NAME }}
         location: ${{ env.AZURE_LOCATION }}
         cpu: 2
@@ -82,6 +82,6 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**Container Name:** ${{ env.AZURE_CONTAINER_NAME }}" >> $GITHUB_STEP_SUMMARY
         echo "**Resource Group:** ${{ env.AZURE_RESOURCE_GROUP }}" >> $GITHUB_STEP_SUMMARY
-        echo "**Image:** ${{ secrets.AZURE_REGISTRY_NAME }}.azurecr.io/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Image:** ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "The Discord bot is now running on Azure Container Instances!" >> $GITHUB_STEP_SUMMARY

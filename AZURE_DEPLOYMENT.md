@@ -5,23 +5,36 @@ This guide walks you through deploying the PyPSA Discord bot to Azure Container 
 ## Prerequisites
 
 1. **Azure Account** with an active subscription
-2. **Azure CLI** installed locally (optional, for manual setup)
+2. **Docker Hub Account** (free - for storing Docker images)
 3. **GitHub Secrets** configured in your repository
 4. **FAISS Index** built and released (via `Build FAISS Index` workflow)
 
 ## Architecture
 
 The deployment uses:
-- **Azure Container Registry (ACR)**: Stores Docker images
+- **Docker Hub**: Stores Docker images (FREE - public repo)
 - **Azure Container Instances (ACI)**: Runs the Discord bot container
 - **GitHub Actions**: Automates build and deployment
 - **GitHub Releases**: Stores the FAISS index (downloaded on container startup)
 
 ## Setup Steps
 
-### 1. Create Azure Resources
+### 1. Create Docker Hub Account (Free)
 
-You need to create these Azure resources (one-time setup):
+1. **Sign up at [Docker Hub](https://hub.docker.com/signup)**
+   - Create a free account
+   - Verify your email
+
+2. **Create Access Token:**
+   - Go to Account Settings → Security
+   - Click "New Access Token"
+   - Name: `pypsa-bot-deployment`
+   - Permissions: Read & Write
+   - Copy the token (you'll need it for GitHub secrets)
+
+### 2. Create Azure Resources
+
+You only need to create a Resource Group and Service Principal (no Container Registry needed!):
 
 #### Option A: Using Azure Portal (Recommended for beginners)
 
@@ -31,21 +44,7 @@ You need to create these Azure resources (one-time setup):
    - Name: `pypsa-bot-rg`
    - Region: `East US` (or your preferred region)
 
-2. **Create Container Registry:**
-   - Search for "Container registries" → "Create"
-   - Name: `pypsabotregistry` (must be globally unique, adjust if needed)
-   - Resource group: `pypsa-bot-rg`
-   - Location: `East US`
-   - SKU: `Basic` (cheapest option, $5/month)
-   - Click "Review + Create"
-
-3. **Enable Admin User on Registry:**
-   - Go to your Container Registry
-   - Settings → Access keys
-   - Enable "Admin user"
-   - Copy the username and password (you'll need these for GitHub secrets)
-
-4. **Create Service Principal:**
+2. **Create Service Principal:**
    - Open Azure Cloud Shell (top-right icon in portal)
    - Run:
    ```bash
@@ -66,18 +65,6 @@ az login
 # Create resource group
 az group create --name pypsa-bot-rg --location eastus
 
-# Create container registry
-az acr create \
-  --resource-group pypsa-bot-rg \
-  --name pypsabotregistry \
-  --sku Basic
-
-# Enable admin user
-az acr update --name pypsabotregistry --admin-enabled true
-
-# Get registry credentials
-az acr credential show --name pypsabotregistry
-
 # Create service principal
 az ad sp create-for-rbac \
   --name "pypsa-bot-sp" \
@@ -86,16 +73,15 @@ az ad sp create-for-rbac \
   --sdk-auth
 ```
 
-### 2. Configure GitHub Secrets
+### 3. Configure GitHub Secrets
 
 Add these secrets to your GitHub repository (Settings → Secrets and variables → Actions → New repository secret):
 
 | Secret Name | Description | Where to Find |
 |-------------|-------------|---------------|
 | `AZURE_CREDENTIALS` | Service principal JSON | Output from `az ad sp create-for-rbac` command |
-| `AZURE_REGISTRY_NAME` | Container registry name | e.g., `pypsabotregistry` |
-| `AZURE_REGISTRY_USERNAME` | Registry admin username | Azure Portal → Container Registry → Access keys |
-| `AZURE_REGISTRY_PASSWORD` | Registry admin password | Azure Portal → Container Registry → Access keys |
+| `DOCKERHUB_USERNAME` | Your Docker Hub username | Your Docker Hub account username |
+| `DOCKERHUB_TOKEN` | Docker Hub access token | Docker Hub → Settings → Security → Access Tokens |
 | `DISCORD_BOT_TOKEN` | Your Discord bot token | Already configured |
 | `GOOGLE_API_KEY` | Google Gemini API key | Already configured |
 
@@ -115,7 +101,7 @@ Add these secrets to your GitHub repository (Settings → Secrets and variables 
 }
 ```
 
-### 3. Deploy to Azure
+### 4. Deploy to Azure
 
 Once everything is set up:
 
@@ -134,7 +120,7 @@ Once everything is set up:
    - Check for any errors
    - Deployment takes ~5-10 minutes
 
-### 4. Verify Deployment
+### 5. Verify Deployment
 
 #### Check Container Status in Azure Portal:
 1. Go to Resource groups → `pypsa-bot-rg`
@@ -191,11 +177,13 @@ environment-variables: |
 
 ## Cost Estimate
 
+**Updated costs using Docker Hub (Free):**
+
 Azure Container Instances pricing (as of 2025):
-- **Container Registry (Basic)**: ~$5/month
+- **Docker Hub**: FREE (public repository)
 - **ACI (2 vCPU, 4 GB RAM)**: ~$70/month (running 24/7)
 
-**Total**: ~$75/month
+**Total**: ~$70/month ✅ **Saves $5/month vs Azure Container Registry**
 
 ### Cost Optimization Tips:
 
@@ -237,15 +225,34 @@ Azure Container Instances pricing (as of 2025):
    - Verify `AZURE_CREDENTIALS` JSON is valid
    - Check service principal has contributor role
 
-2. **Registry access denied:**
-   - Verify registry admin user is enabled
-   - Check username/password secrets are correct
+2. **Docker Hub authentication:**
+   - Verify `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets are set
+   - Check Docker Hub access token has not expired
+   - Ensure image is public or use imagePullSecrets for private images
 
 3. **Resource already exists:**
    ```bash
    # Delete existing container
    az container delete --resource-group pypsa-bot-rg --name pypsa-discord-bot --yes
    ```
+
+### Image Pull Errors:
+
+If the container fails to pull the image from Docker Hub:
+
+```bash
+# Check Docker Hub image locally
+docker pull <your-dockerhub-username>/pypsa-helper-bot:latest
+
+# Verify container logs
+az container logs --resource-group pypsa-bot-rg --name pypsa-discord-bot
+```
+
+Make sure:
+- Image exists on Docker Hub and is public
+- Tag exists (check on hub.docker.com)
+- Image name in workflow matches your Docker Hub username
+- No typos in image path
 
 ### Out of memory errors:
 
