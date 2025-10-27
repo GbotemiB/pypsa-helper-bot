@@ -1,7 +1,7 @@
 import os
 from git import Repo
 from langchain_community.document_loaders import DirectoryLoader, TextLoader, GitHubIssuesLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter, Language
+from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
 from langchain_google_genai import GoogleGenerativeAIEmbeddings  # <-- CHANGE HERE
 from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
