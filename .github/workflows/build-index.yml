@@ -8,6 +8,9 @@ on:
         required: false
         default: 'Manual rebuild'
 
+permissions:
+  contents: write  # Required to create releases
+
 jobs:
   build-index:
     runs-on: ubuntu-latest
