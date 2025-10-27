@@ -28,6 +28,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
+    - name: Debug - Check environment
+      run: |
+        echo "Checking if GITHUB_ACCESS_TOKEN is set..."
+        if [ -z "$GITHUB_ACCESS_TOKEN" ]; then
+          echo "❌ GITHUB_ACCESS_TOKEN is NOT set"
+        else
+          echo "✅ GITHUB_ACCESS_TOKEN is set (length: ${#GITHUB_ACCESS_TOKEN})"
+        fi
+      env:
+        GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT }}
+    
     - name: Run ingestion process
       run: |
         python src/ingest.py
