@@ -47,7 +47,7 @@ for name, url in REPOSITORIES.items():
     targets_to_load = []
     if name == "pypsa":
         targets_to_load.append({'path': os.path.join(
-            repo_path, "doc"), 'pattern': "**/*.rst"})
+            repo_path, "docs"), 'pattern': "**/*.md"})
         targets_to_load.append({'path': os.path.join(
             repo_path, "test"), 'pattern': "**/*.py"})
         targets_to_load.append({'path': os.path.join(
@@ -142,7 +142,8 @@ embeddings = HuggingFaceBgeEmbeddings(
 # Process documents in batches for progress tracking
 batch_size = 100  # Process 100 documents at a time
 total_batches = (len(docs) + batch_size - 1) // batch_size
-print(f"Processing {len(docs)} chunks in {total_batches} batches of {batch_size}...")
+print(
+    f"Processing {len(docs)} chunks in {total_batches} batches of {batch_size}...")
 
 # Create the first batch to initialize the vector store
 first_batch = docs[:batch_size]
@@ -156,7 +157,8 @@ for i in range(1, total_batches):
     batch = docs[start_idx:end_idx]
 
     vector_store.add_documents(batch)
-    print(f"Batch {i+1}/{total_batches} completed ({end_idx}/{len(docs)} chunks processed)")
+    print(
+        f"Batch {i+1}/{total_batches} completed ({end_idx}/{len(docs)} chunks processed)")
 
 print("All embeddings created successfully!")
 
