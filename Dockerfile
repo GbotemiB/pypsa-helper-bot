@@ -19,9 +19,12 @@ COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
 
 COPY src/ ./src/
+COPY scripts/ ./scripts/
 
-RUN mkdir -p /app/pypsa_ecosystem_faiss_index
+RUN mkdir -p /app/pypsa_ecosystem_faiss_index && \
+    chmod +x ./scripts/download-index.sh
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "src/bot.py"]
+# Download index and start bot
+CMD ["sh", "-c", "./scripts/download-index.sh && python src/bot.py"]
