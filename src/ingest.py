@@ -8,13 +8,16 @@ from dotenv import load_dotenv
 import shutil
 import re
 
-load_dotenv()
+load_dotenv()  # Load from .env file if it exists (for local development)
 
 GITHUB_TOKEN = os.getenv("GITHUB_ACCESS_TOKEN")
 
-# Check if required API key is set
+# Check if required environment variable is set
 if not GITHUB_TOKEN:
-    raise ValueError("GitHub access token not found in .env file")
+    raise ValueError(
+        "GitHub access token not found. "
+        "Set GITHUB_ACCESS_TOKEN environment variable or add to .env file"
+    )
 
 REPOSITORIES = {
     "pypsa": "https://github.com/PyPSA/pypsa.git",
