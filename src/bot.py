@@ -5,8 +5,8 @@ import asyncio
 from pathlib import Path
 
 from langchain.chains import ConversationalRetrievalChain
-from langchain_google_genai import ChatGoogleGenerativeAI      # <-- CHANGE HERE
-from langchain_google_genai import GoogleGenerativeAIEmbeddings  # <-- CHANGE HERE
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain.prompts import PromptTemplate
@@ -14,7 +14,7 @@ from langchain.prompts import PromptTemplate
 # --- 1. Load Environment Variables and API Keys ---
 load_dotenv()
 TOKEN = os.getenv('DISCORD_BOT_TOKEN')
-GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')  # <-- CHANGE HERE
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
 if not TOKEN or not GOOGLE_API_KEY:
     raise ValueError(
@@ -34,10 +34,13 @@ Follow these rules strictly:
 """
 
 # --- 2. Load the Knowledge Base (FAISS Vector Store) ---
-VECTOR_STORE_PATH = "pypsa_ecosystem_faiss_index"  # <-- Use the new Gemini index
+VECTOR_STORE_PATH = "pypsa_ecosystem_faiss_index"
 print("Loading FAISS vector store...")
-embeddings = GoogleGenerativeAIEmbeddings(
-    model="models/embedding-001")  # <-- CHANGE HERE
+embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2",
+    model_kwargs={'device': 'cpu'},
+    encode_kwargs={'normalize_embeddings': True}
+)
 vector_store = FAISS.load_local(
     VECTOR_STORE_PATH, embeddings, allow_dangerous_deserialization=True)
 print("Vector store loaded successfully.")

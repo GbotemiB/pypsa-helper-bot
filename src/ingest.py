@@ -2,7 +2,7 @@ import os
 from git import Repo
 from langchain_community.document_loaders import DirectoryLoader, TextLoader, GitHubIssuesLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
-from langchain_google_genai import GoogleGenerativeAIEmbeddings  # <-- CHANGE HERE
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
 import shutil
@@ -10,13 +10,9 @@ import re
 
 load_dotenv()
 
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 GITHUB_TOKEN = os.getenv("GITHUB_ACCESS_TOKEN")
 
-# Check if required API keys are set
-if not GOOGLE_API_KEY:
-    raise ValueError("Google API key not found in .env file")
-
+# Check if required API key is set
 if not GITHUB_TOKEN:
     raise ValueError("GitHub access token not found in .env file")
 
@@ -129,12 +125,15 @@ docs = text_splitter.split_documents(all_documents)
 print(f"Split into {len(docs)} chunks.")
 
 # --- 4. Create Embeddings and Store in FAISS ---
-print("Creating embeddings with Gemini and building FAISS vector store...")
-# Here we specify the Gemini embedding model
-embeddings = GoogleGenerativeAIEmbeddings(
-    model="models/embedding-001")  # <-- CHANGE HERE
+print("Creating embeddings with HuggingFace and building FAISS vector store...")
+# Using a free local embedding model - no API calls needed!
+embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2",
+    model_kwargs={'device': 'cpu'},
+    encode_kwargs={'normalize_embeddings': True}
+)
 
-# This will take some time and make API calls to Google
+# This will take some time but runs locally - no API quotas
 vector_store = FAISS.from_documents(docs, embeddings)
 
 

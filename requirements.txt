@@ -1,11 +1,11 @@
 discord.py
 python-dotenv
-langchain>=0.3.0
-langchain-core>=0.3.0
-langchain-community>=0.3.0
-langchain-text-splitters>=0.3.0
-langchain-google-genai>=2.0.0
-google-generativeai
+langchain>=0.3.0,<0.4.0
+langchain-core>=0.3.72,<1.0.0
+langchain-community>=0.3.0,<0.4.0
+langchain-text-splitters>=0.3.0,<0.4.0
+langchain-huggingface>=0.3.0,<1.0.0
+sentence-transformers>=2.2.0
 tiktoken 
 faiss-cpu 
 beautifulsoup4 
