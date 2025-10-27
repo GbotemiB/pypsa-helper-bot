@@ -1,0 +1,113 @@
+# Git# Git
+
+.git.git
+
+.gitignore.gitignore
+
+.gitattributes.github
+
+
+
+# CI/CD# Python
+
+.github__pycache__/
+
+*.py[cod]
+
+# Documentation*$py.class
+
+*.md*.so
+
+docs/.Python
+
+DEPLOYMENT.mdenv/
+
+QUICKSTART.mdvenv/
+
+ENV/
+
+# Pythonbuild/
+
+__pycache__/develop-eggs/
+
+*.py[cod]dist/
+
+*$py.classdownloads/
+
+*.soeggs/
+
+.Python.eggs/
+
+venv/lib/
+
+env/lib64/
+
+ENV/parts/
+
+.pytest_cache/sdist/
+
+var/
+
+# IDEwheels/
+
+.vscode/*.egg-info/
+
+.idea/.installed.cfg
+
+*.swp*.egg
+
+*.swo
+
+*~# Environment
+
+.env
+
+# OS.env.local
+
+.DS_Store.env.*.local
+
+Thumbs.db
+
+# IDEs
+
+# Project specific.vscode/
+
+cloned_repos/.idea/
+
+pypsa_ecosystem_faiss_index/*.swp
+
+*.log*.swo
+
+.env*~
+
+.env.local
+
+.env.*.local# Documentation
+
+README.md
+
+# AzureLICENSE
+
+.azure/docs/
+
+
+
+# Not needed in container# Data and indexes (will be downloaded at runtime)
+
+test_setup.pycloned_repos/
+
+docker-compose.ymlpypsa_ecosystem_faiss_index/
+
+Makefile
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# CI/CD
+.github/
+
+# OS
+.DS_Store
+Thumbs.db

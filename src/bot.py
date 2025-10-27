@@ -2,10 +2,11 @@ import discord
 import os
 from dotenv import load_dotenv
 import asyncio
+from pathlib import Path
 
 from langchain.chains import ConversationalRetrievalChain
 from langchain_google_genai import ChatGoogleGenerativeAI      # <-- CHANGE HERE
-from langchain_google_genai import GoogleGenerativeAIEmbeddings # <-- CHANGE HERE
+from langchain_google_genai import GoogleGenerativeAIEmbeddings  # <-- CHANGE HERE
 from langchain_community.vectorstores import FAISS
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain.prompts import PromptTemplate
@@ -13,10 +14,11 @@ from langchain.prompts import PromptTemplate
 # --- 1. Load Environment Variables and API Keys ---
 load_dotenv()
 TOKEN = os.getenv('DISCORD_BOT_TOKEN')
-GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY') # <-- CHANGE HERE
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')  # <-- CHANGE HERE
 
 if not TOKEN or not GOOGLE_API_KEY:
-    raise ValueError("Discord token and Google API key must be set in .env file")
+    raise ValueError(
+        "Discord token and Google API key must be set in .env file")
 
 SYSTEM_PROMPT = """
 You are PyPSA-AI-Helper, a friendly and expert AI assistant for the PyPSA (Python for Power System Analysis) community. Your purpose is to answer user questions accurately based on the provided context.
@@ -32,10 +34,12 @@ Follow these rules strictly:
 """
 
 # --- 2. Load the Knowledge Base (FAISS Vector Store) ---
-VECTOR_STORE_PATH = "pypsa_ecosystem_faiss_index" # <-- Use the new Gemini index
+VECTOR_STORE_PATH = "pypsa_ecosystem_faiss_index"  # <-- Use the new Gemini index
 print("Loading FAISS vector store...")
-embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001") # <-- CHANGE HERE
-vector_store = FAISS.load_local(VECTOR_STORE_PATH, embeddings, allow_dangerous_deserialization=True)
+embeddings = GoogleGenerativeAIEmbeddings(
+    model="models/embedding-001")  # <-- CHANGE HERE
+vector_store = FAISS.load_local(
+    VECTOR_STORE_PATH, embeddings, allow_dangerous_deserialization=True)
 print("Vector store loaded successfully.")
 
 template = SYSTEM_PROMPT + """
@@ -51,7 +55,8 @@ QA_PROMPT = PromptTemplate(
 )
 
 # --- 3. Set up the LangChain QA Chain ---
-llm = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0.3,) # <-- CHANGE HERE
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-pro", temperature=0.3,)  # <-- CHANGE HERE
 retriever = vector_store.as_retriever(search_kwargs={"k": 3})
 
 qa_chain = ConversationalRetrievalChain.from_llm(
@@ -66,17 +71,29 @@ intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
 
+
+def update_health_check():
+    """Update health check file to indicate bot is running"""
+    try:
+        health_file = Path("/tmp/bot_healthy")
+        health_file.touch()
+    except Exception as e:
+        print(f"Warning: Could not update health check file: {e}")
+
+
 @client.event
 async def on_ready():
     print(f'{client.user} has connected to Discord!')
     print('Ready to answer questions about PyPSA with Google Gemini.')
+    update_health_check()
+
 
 @client.event
 async def on_message(message):
     if message.author == client.user:
         return
 
-    if client.user.mentioned_in(message):
+    if client.user is not None and client.user.mentioned_in(message):
         async with message.channel.typing():
             # --- THIS IS THE UPDATED SECTION ---
             chat_history = []
@@ -87,15 +104,16 @@ async def on_message(message):
                     chat_history.append(AIMessage(content=msg.content))
                 else:
                     chat_history.append(HumanMessage(content=msg.content))
-            
+
             # Reverse the history to be in chronological order
             chat_history.reverse()
             # --- END OF UPDATED SECTION ---
-            
-            question = message.content.replace(f'<@!{client.user.id}>', '').strip()
+
+            question = message.content.replace(
+                f'<@!{client.user.id}>', '').strip() if client.user else message.content.strip()
 
             print(f"Invoking QA chain with Gemini for question: '{question}'")
-            
+
             # Use .invoke() instead of .__call__() to avoid the deprecation warning
             result = await asyncio.to_thread(qa_chain.invoke, {"question": question, "chat_history": chat_history})
             answer = result['answer']
@@ -107,4 +125,11 @@ async def on_message(message):
                 await message.channel.send(answer)
 
 # Run the bot
-client.run(TOKEN)
+try:
+    update_health_check()
+    client.run(TOKEN)
+except KeyboardInterrupt:
+    print("\n👋 Bot shutting down gracefully...")
+except Exception as e:
+    print(f"❌ Bot encountered an error: {e}")
+    raise

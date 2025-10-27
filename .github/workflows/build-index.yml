@@ -1,0 +1,111 @@
+name: Build FAISS Index
+
+on:
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      reason:
+        description: 'Reason for rebuilding index'
+        required: false
+        default: 'Manual rebuild'
+
+jobs:
+  build-index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180  # 3 hours max
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run ingestion process
+      run: |
+        python src/ingest.py
+      env:
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_ACCESS_TOKEN }}
+    
+    - name: Create build metadata
+      run: |
+        echo "Built on: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" > pypsa_ecosystem_faiss_index/build_info.txt
+        echo "Workflow: ${{ github.workflow }}" >> pypsa_ecosystem_faiss_index/build_info.txt
+        echo "Run ID: ${{ github.run_id }}" >> pypsa_ecosystem_faiss_index/build_info.txt
+        echo "Commit: ${{ github.sha }}" >> pypsa_ecosystem_faiss_index/build_info.txt
+        echo "Reason: ${{ github.event.inputs.reason }}" >> pypsa_ecosystem_faiss_index/build_info.txt
+    
+    - name: Compress FAISS index
+      run: |
+        tar -czf pypsa-faiss-index.tar.gz pypsa_ecosystem_faiss_index/
+        echo "📦 Compressed index created"
+        ls -lh pypsa-faiss-index.tar.gz
+    
+    - name: Get index stats
+      run: |
+        echo "### Index Statistics" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Directory Size:**" >> $GITHUB_STEP_SUMMARY
+        du -sh pypsa_ecosystem_faiss_index/ >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Compressed Size:**" >> $GITHUB_STEP_SUMMARY
+        ls -lh pypsa-faiss-index.tar.gz | awk '{print $5}' >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Files:**" >> $GITHUB_STEP_SUMMARY
+        ls -lh pypsa_ecosystem_faiss_index/ >> $GITHUB_STEP_SUMMARY
+    
+    - name: Create Release Tag
+      id: create_tag
+      run: |
+        TAG_NAME="index-$(date -u +'%Y%m%d-%H%M%S')"
+        echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+        echo "📌 Release tag: $TAG_NAME"
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.create_tag.outputs.tag_name }}
+        name: FAISS Index - ${{ steps.create_tag.outputs.tag_name }}
+        body: |
+          ## PyPSA FAISS Index Build
+          
+          **Built:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')
+          **Workflow Run:** [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          **Commit:** ${{ github.sha }}
+          **Reason:** ${{ github.event.inputs.reason }}
+          
+          ### Download
+          Download the `pypsa-faiss-index.tar.gz` file attached to this release.
+          
+          ### Usage
+          ```bash
+          # Download and extract
+          wget https://github.com/${{ github.repository }}/releases/download/${{ steps.create_tag.outputs.tag_name }}/pypsa-faiss-index.tar.gz
+          tar -xzf pypsa-faiss-index.tar.gz
+          ```
+          
+          ### Contents
+          - `index.faiss` - FAISS vector database
+          - `index.pkl` - Serialized metadata
+          - `build_info.txt` - Build information
+        files: pypsa-faiss-index.tar.gz
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Success Summary
+      run: |
+        echo "### ✅ FAISS Index Built Successfully!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Release:** [${{ steps.create_tag.outputs.tag_name }}](https://github.com/${{ github.repository }}/releases/tag/${{ steps.create_tag.outputs.tag_name }})" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "The index has been uploaded to GitHub Releases and is ready to use." >> $GITHUB_STEP_SUMMARY
