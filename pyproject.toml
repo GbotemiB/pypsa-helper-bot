@@ -1,0 +1,51 @@
+[project]
+name = "pypsa-helper-bot"
+version = "2.0.0"
+description = "AI-powered Discord bot for PyPSA community support using RAG"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+dependencies = [
+    "discord.py>=2.3",
+    "python-dotenv>=1.0",
+    "haystack-ai>=2.0",
+    "qdrant-haystack>=5.0",
+    "groq>=0.4",
+    "sentence-transformers>=2.2",
+    "PyGitHub>=2.1",
+    "gitpython>=3.1",
+    "tree-sitter>=0.21",
+    "tree-sitter-python>=0.21",
+    "qdrant-client>=1.7",
+    "nomic>=3.0",
+    "einops>=0.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.3",
+    "mypy>=1.8",
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+]
+
+[project.scripts]
+pypsa-bot = "pypsa_bot.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pypsa_bot"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
